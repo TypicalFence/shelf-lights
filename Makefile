@@ -24,7 +24,7 @@ $(OBJECTS): ./build/%.o: ./src/%.c
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 flash: shelf-lights.ihex
-	avrdude -p $(MMCU) -c stk500 -b 19600 -P /dev/ttyUSB0 -U flash:w:shelf-lights.ihex:i
+	avrdude -C /etc/avrdude.conf -p $(MMCU) -c arduino -b 115200 -P /dev/ttyUSB0 -U flash:w:shelf-lights.ihex:i
 
 clean:
 	rm -f shelf-lights.elf
