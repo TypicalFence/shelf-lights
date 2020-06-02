@@ -1,3 +1,0 @@
-[submodule "vendor/FastLED"]
-	path = vendor/FastLED
-	url = https://github.com/FastLED/FastLED.git
