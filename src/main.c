@@ -1,14 +1,15 @@
-#include <avr/io.h>
+#include <owoLED.h>
 #include <util/delay.h>
 
 int main (void) {
 
-   DDRB |= (1 << PB0);
-
-   while(1) {
-       PORTB ^= (1 << PB0);
-       _delay_ms(500);
-   }
-
-   return 0;
+    owoled_init();
+    while(1) {
+        owoled_toggle();
+        _delay_ms(500);
+    }
+    
+    return 0;
 }
+
+
