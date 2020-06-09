@@ -1,0 +1,13 @@
+image: "registry.git.chaostreffbern.ch/molniya-gang/docker-avr-gcc:latest"
+
+stages:
+  - build
+
+build:
+  stage: build
+  script:
+    - make
+  artifacts:
+    paths:
+    - shelf-lights.elf
+    - shelf-lights.ihex
