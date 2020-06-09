@@ -1,5 +1,8 @@
 image: "registry.git.chaostreffbern.ch/molniya-gang/docker-avr-gcc:latest"
 
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
 stages:
   - build
 
