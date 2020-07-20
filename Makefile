@@ -1,17 +1,28 @@
-CC=avr-gcc
 MMCU=atmega328p
 CLOCK=16000000
 DEVICE=/dev/ttyACM0
 
-CFLAGS := -std=gnu99 -Os -Wall -ffunction-sections -fdata-sections 
-CFLAGS += -mmcu=$(MMCU) -DF_CPU=$(CLOCK)
-CFLAGS += -I ./vendor/owoLED/include -I ./
-LDFLAGS := -Os -mmcu=$(MMCU) -ffunction-sections -fdata-sections -Wl,--gc-sections 
-LDFLAGS += -L ./vendor/owoLED -lowoled  
+CC=avr-gcc
+CXX=avr-g++
+LD=$(CXX) # avr-ld refuses to link libc.a
 
-SOURCES := $(wildcard lib/*.c lib/*/*.c)
+MCUFLAGS := -mmcu=$(MMCU) -DF_CPU=$(CLOCK)
+INCLUDE_PATHS := -I ./vendor/owoLED/include -I ./ 
+
+CFLAGS := -std=gnu99 -Os -Wall -ffunction-sections -fdata-sections 
+CFLAGS += $(MCUFLAGS) 
+CFLAGS += $(INCLUDE_PATHS) 
+CXXFLAGS := -std=c++11 -Os -Wall -ffunction-sections -fdata-sections 
+CXXFLAGS += $(MCUFLAGS) 
+CXXFLAGS += $(INCLUDE_PATHS) 
+LDFLAGS := -L ./vendor/owoLED -lowoled 
+
+C_SOURCES := $(wildcard lib/*.c lib/*/*.c)
+CXX_SOURCES := $(wildcard lib/*.cc lib/*/*.cc)
 HEADERS := $(wildcard lib/*.h lib/*/*.h)
-OBJECTS := $(subst .c,.o, $(subst lib,build, $(SOURCES)))
+C_OBJECTS := $(subst .c,.o, $(subst lib,build, $(C_SOURCES)))
+CXX_OBJECTS := $(subst .cc,.o, $(subst lib,build, $(CXX_SOURCES)))
+OBJECTS := $(C_OBJECTS) $(CXX_OBJECTS)
 LIBS := ./vendor/owoLED/libowoled.a
 
 .Phony: clean flash 
@@ -22,13 +33,17 @@ shelf-lights.ihex: shelf-lights.elf
 	avr-objcopy -O ihex -R .eeprom shelf-lights.elf shelf-lights.ihex
 
 shelf-lights.elf: ./build/src/shelf-lights.o $(OBJECTS) $(LIBS)
-	$(CC) -o $@ ./build/src/shelf-lights.o  $(OBJECTS) $(LDFLAGS)
+	$(LD) -o $@ ./build/src/shelf-lights.o  $(OBJECTS) $(LDFLAGS)
 
 build/src/shelf-lights.o: ./src/shelf-lights.c $(OBJECTS) $(LIBS)
 	mkdir -p $(@D)
-	$(CC) -c $< -o $@ $(CFLAGS)
+	$(CXX) -c $< -o $@ $(CXXFLAGS)
 
-$(OBJECTS): ./build/%.o: ./lib/%.c
+$(CXX_OBJECTS): ./build/%.o: ./lib/%.cc
+	mkdir -p $(@D)
+	$(CXX) -c $< -o $@ $(CFLAGS)
+
+$(C_OBJECTS): ./build/%.o: ./lib/%.c
 	mkdir -p $(@D)
 	$(CC) -c $< -o $@ $(CFLAGS)
 
