@@ -5,26 +5,30 @@ DEVICE=/dev/ttyACM0
 
 CFLAGS := -std=gnu99 -Os -Wall -ffunction-sections -fdata-sections 
 CFLAGS += -mmcu=$(MMCU) -DF_CPU=$(CLOCK)
-CFLAGS += -I ./vendor/owoLED/include
+CFLAGS += -I ./vendor/owoLED/include -I ./
 LDFLAGS := -Os -mmcu=$(MMCU) -ffunction-sections -fdata-sections -Wl,--gc-sections 
 LDFLAGS += -L ./vendor/owoLED -lowoled  
 
-SOURCES := $(wildcard src/*.c src/*/*.c)
-HEADERS := $(wildcard src/*.h src/*/*.h)
-OBJECTS := $(subst .c,.o, $(subst src,build, $(SOURCES)))
+SOURCES := $(wildcard lib/*.c lib/*/*.c)
+HEADERS := $(wildcard lib/*.h lib/*/*.h)
+OBJECTS := $(subst .c,.o, $(subst lib,build, $(SOURCES)))
 LIBS := ./vendor/owoLED/libowoled.a
 
-.Phony: clean flash
+.Phony: clean flash 
 
 default: shelf-lights.ihex
 
 shelf-lights.ihex: shelf-lights.elf
 	avr-objcopy -O ihex -R .eeprom shelf-lights.elf shelf-lights.ihex
 
-shelf-lights.elf: $(OBJECTS) $(LIBS)
-	$(CC) -o $@ $(OBJECTS) $(LDFLAGS)
+shelf-lights.elf: ./build/src/shelf-lights.o $(OBJECTS) $(LIBS)
+	$(CC) -o $@ ./build/src/shelf-lights.o  $(OBJECTS) $(LDFLAGS)
 
-$(OBJECTS): ./build/%.o: ./src/%.c
+build/src/shelf-lights.o: ./src/shelf-lights.c $(OBJECTS) $(LIBS)
+	mkdir -p $(@D)
+	$(CC) -c $< -o $@ $(CFLAGS)
+
+$(OBJECTS): ./build/%.o: ./lib/%.c
 	mkdir -p $(@D)
 	$(CC) -c $< -o $@ $(CFLAGS)
 
